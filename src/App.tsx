@@ -63,16 +63,13 @@ export default function App() {
       wallLevel: unitsRef.current.wallLevel,
     });
 
-    const result = await fetch(
-      "http://localhost:4500/v1/game/attackSimulation",
-      {
-        method: "POST",
-        body,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const result = await fetch(import.meta.env.VITE_API_URL, {
+      method: "POST",
+      body,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
     if (!result.ok) {
       return toast({
         variant: "destructive",
