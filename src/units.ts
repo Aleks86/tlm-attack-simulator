@@ -59,17 +59,17 @@ export const unitsList: UnitType[] = [
   // UnitType.Caravan,
 ];
 
-type BattleUnit = {
+export type BattleUnit = {
   type: UnitType;
   amount: number;
   level: number;
 };
 
-type BattleUnitWithRemainingAmount = BattleUnit & {
+export type BattleUnitWithRemainingAmount = BattleUnit & {
   remaining: number;
 };
 
-type TotalsStats = {
+export type TotalsStats = {
   /** total hp of all units of same attack category */
   hp: number;
   /** remaining hp of all units of same attack category */
@@ -99,3 +99,11 @@ export type ISummary = {
   attackerTotalWin: number;
   defenderTotalWin: number;
 };
+
+export enum UnitProperty {
+  Speed = 10,
+  Carry = 20,
+  Attack = 30,
+  Defense = 40,
+  Health = 50,
+}
