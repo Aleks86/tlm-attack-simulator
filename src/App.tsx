@@ -25,6 +25,8 @@ import UnitProperties from "./components/unitProperties";
 import { unitsData } from "@/data/unitsData";
 import { produce } from "immer";
 import gameService from "./services/game.service";
+import { Switch } from "./components/ui/switch";
+import { Label } from "./components/ui/label";
 
 const useServer = false;
 
@@ -57,6 +59,7 @@ export default function App() {
   );
 
   const [reload, setReload] = useState(1);
+  const [useSimulationV2, setUseSimulationV2] = useState(true);
   const [summary, setSummary] = useState<ISummary>();
   const [attackerResourcesLost, setAttackerResourcesLost] = useState<{
     wheat: number;
@@ -129,12 +132,22 @@ export default function App() {
       const data = await result.json();
       setSummary(data);
     } else {
-      const summary = gameService.calculateBattle(
-        attacker,
-        defender,
-        unitsNumbers.wallDefenseBonus,
-        properties
-      );
+      let summary;
+      if (useSimulationV2) {
+        summary = gameService.calculateBattleV2(
+          attacker,
+          defender,
+          unitsNumbers.wallDefenseBonus,
+          properties
+        );
+      } else {
+        summary = gameService.calculateBattle(
+          attacker,
+          defender,
+          unitsNumbers.wallDefenseBonus,
+          properties
+        );
+      }
       setAttackerResourcesLost(getResourceLoss(summary.attackerUnits));
       setDefenderResourcesLost(getResourceLoss(summary.defenderUnits));
 
@@ -166,11 +179,19 @@ export default function App() {
   return (
     <div key={reload} className="p-6 bg-slate-500 min-h-screen">
       <Tabs defaultValue="simulation">
-        <div className="text-center">
-          <TabsList className="mb-3">
+        <div className="flex gap-3 items-center justify-center mb-3">
+          <TabsList>
             <TabsTrigger value="simulation">Simulation</TabsTrigger>
             <TabsTrigger value="properties">Properties</TabsTrigger>
           </TabsList>
+
+          <Switch
+            id="simulation-mode"
+            checked={useSimulationV2}
+            onCheckedChange={(v) => setUseSimulationV2(v)}
+            className="ml-5"
+          />
+          <Label htmlFor="simulation-mode">Simulation V2</Label>
         </div>
         <TabsContent value="simulation">
           <div className="flex gap-6 justify-center">

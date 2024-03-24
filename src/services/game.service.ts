@@ -232,6 +232,113 @@ export class GameService {
       defenderTotalWin,
     };
   }
+
+  calculateBattleV2(
+    attackerUnits: BattleUnit[],
+    defenderUnits: BattleUnit[],
+    // wallLevel: number
+    wallDefenseBonus: number,
+    _unitsData?: UnitsDataJson
+  ) /* : {
+      success: boolean;
+      attackerUnits: BattleUnitWithRemainingAmount[];
+      defenderUnits: BattleUnitWithRemainingAmount[];
+    } */ {
+    const unitsData = _unitsData ?? unitsDataOrig;
+
+    const defenseBonus =
+      //   Building.getEffects(BuildingType.Wall, wallLevel).defenseBonus ?? 0;
+      wallDefenseBonus;
+
+    const attacker = this._getTotalAttack(attackerUnits, unitsData);
+    const defender = this._getTotalDefense(
+      defenderUnits,
+      defenseBonus,
+      unitsData
+    );
+
+    // calculate win % per attack category
+    unitAttackCategories.map((attackCategory) => {
+      const both =
+        attacker[attackCategory].attack + defender[attackCategory].attack;
+      const attackerWin =
+        both === 0 ? 0 : (100 * attacker[attackCategory].attack) / both;
+      const defenderWin = both === 0 ? 0 : 100 - attackerWin;
+      attacker[attackCategory].win = attackerWin;
+      defender[attackCategory].win = defenderWin;
+    });
+
+    const attackerTotalAttack = Object.values(attacker).reduce(
+      (sum, stats) => sum + stats.attack,
+      0
+    );
+    const defenderTotalAttack = Object.values(defender).reduce(
+      (sum, stats) => sum + stats.attack,
+      0
+    );
+    const bothTotalAttack = attackerTotalAttack + defenderTotalAttack;
+    const attackerTotalWin = (100 * attackerTotalAttack) / bothTotalAttack;
+    const defenderTotalWin = 100 - attackerTotalWin;
+
+    const success = attackerTotalWin > defenderTotalWin;
+
+    const attackerTotalHp = Object.values(attacker).reduce(
+      (sum, stats) => sum + stats.hp,
+      0
+    );
+    const defenderTotalHp = Object.values(defender).reduce(
+      (sum, stats) => sum + stats.hp,
+      0
+    );
+    const attackerRemainingHp = (attackerTotalHp * attackerTotalWin) / 100;
+    const defenderRemainingHp = (defenderTotalHp * defenderTotalWin) / 100;
+
+    // remaining HP calculation
+    unitAttackCategories.forEach((attackCategory) => {
+      attacker[attackCategory].remainingHp =
+        (attacker[attackCategory].hp / attackerTotalHp) * attackerRemainingHp;
+
+      defender[attackCategory].remainingHp =
+        (defender[attackCategory].hp / defenderTotalHp) * defenderRemainingHp;
+    });
+
+    // remaining units
+    const attackerRemainingUnits: BattleUnitWithRemainingAmount[] =
+      attackerUnits.map((unit) => {
+        const unitAttackCategory = Unit.getUnitAttackCategory(unit.type);
+        const { hp, remainingHp } = attacker[unitAttackCategory];
+
+        const remaining = Math.round(unit.amount * (remainingHp / hp));
+
+        return {
+          ...unit,
+          remaining,
+        };
+      });
+
+    const defenderRemainingUnits: BattleUnitWithRemainingAmount[] =
+      defenderUnits.map((unit) => {
+        const unitAttackCategory = Unit.getUnitAttackCategory(unit.type);
+        const { hp, remainingHp } = defender[unitAttackCategory];
+
+        const remaining = Math.round(unit.amount * (remainingHp / hp));
+
+        return {
+          ...unit,
+          remaining,
+        };
+      });
+
+    return {
+      success,
+      attackerUnits: attackerRemainingUnits,
+      defenderUnits: defenderRemainingUnits,
+      attacker,
+      defender,
+      attackerTotalWin,
+      defenderTotalWin,
+    };
+  }
 }
 
 const gameService = new GameService();

@@ -59,7 +59,17 @@ const UnitSlider = ({
               {amount}
             </span>
 
-            <span className="text-sm font-bold w-12 text-red-700 shrink-0 ">
+            <span className="text-sm font-bold w-12 text-red-700 shrink-0 text-right mt-5">
+              {losses !== undefined && (
+                <>
+                  {" "}
+                  <span className="text-green-700">
+                    {amount - losses}&nbsp;
+                  </span>
+                  <br />
+                </>
+              )}
+
               {losses !== undefined ? `-(${losses})` : ""}
             </span>
           </>
